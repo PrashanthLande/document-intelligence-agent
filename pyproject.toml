@@ -1,0 +1,18 @@
+[project]
+name = "document-intelligence-agent"
+version = "0.1.0"
+description = "An agentic document intelligence system for grounded question answering and source-level provenance."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Prashanth Lande" }
+]
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
