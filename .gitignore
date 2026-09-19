@@ -224,3 +224,6 @@ chroma/
 # IntelliJ IDEA
 .idea/
 *.iml
+
+# Test documents
+tests/fixtures/

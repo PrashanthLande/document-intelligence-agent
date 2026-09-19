@@ -106,4 +106,12 @@ The system will return not only an answer, but also relevant source information 
 
 This project is being developed incrementally, with each phase focusing on understanding, implementing, testing, and evaluating a specific part of the document intelligence pipeline.
 
+## Test Documents
+
+Test documents are not included in this repository.
+
+Place your own test documents in:
+
+```text
+tests/fixtures/
 
