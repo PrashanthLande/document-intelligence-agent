@@ -18,10 +18,19 @@ def test_rag_generator():
         }
     ]
 
-    answer = generator.generate(
+    result = generator.generate(
         query="What is Docling?",
         evidence=evidence,
     )
 
-    assert answer
-    assert isinstance(answer, str)
+    assert result["answer"]
+    assert isinstance(result["answer"], str)
+
+    assert result["sources"]
+    assert len(result["sources"]) == 1
+
+    source = result["sources"][0]
+
+    assert source["document_id"] == "example.pdf"
+    assert source["page_numbers"] == "1"
+    assert source["section"] == "Introduction"

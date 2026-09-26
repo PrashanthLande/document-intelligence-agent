@@ -28,8 +28,8 @@ class RAGGenerator:
             self,
             query: str,
             evidence: list[dict[str, Any]],
-    ) -> str:
-        """Generate an answer grounded in the supplied evidence."""
+    ) -> dict[str, Any]:
+        """Generate a grounded answer and return its source evidence."""
 
         context_parts = []
 
@@ -51,12 +51,14 @@ Text:
         context = "\n\n".join(context_parts)
 
         prompt = f"""
-Answer the user's question using only the provided evidence.
+Answer the user's question using only the provided document evidence.
 
 If the evidence does not contain enough information to answer the
 question, say that the available document evidence is insufficient.
 
 Do not invent facts or information that is not supported by the evidence.
+
+Do not mention evidence numbers in the answer.
 
 User question:
 {query}
@@ -70,4 +72,21 @@ Document evidence:
             input=prompt,
         )
 
-        return response.output_text
+        sources = []
+
+        for result in evidence:
+            metadata = result["metadata"]
+
+            sources.append(
+                {
+                    "document_id": metadata.get("document_id"),
+                    "page_numbers": metadata.get("page_numbers"),
+                    "section": metadata.get("section"),
+                    "item_types": metadata.get("item_types"),
+                }
+            )
+
+        return {
+            "answer": response.output_text,
+            "sources": sources,
+        }
