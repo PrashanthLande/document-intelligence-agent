@@ -88,4 +88,3 @@ def test_retrieval_and_reranking():
             >= reranked[2]["rerank_score"]
     )
 
- 
