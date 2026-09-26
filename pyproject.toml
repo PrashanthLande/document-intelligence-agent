@@ -9,6 +9,7 @@ authors = [
     { name = "Prashanth Lande" }
 ]
 dependencies = [
+    "chromadb>=1.5.9",
     "docling==2.126.0",
     "sentence-transformers>=6.1.0",
 ]

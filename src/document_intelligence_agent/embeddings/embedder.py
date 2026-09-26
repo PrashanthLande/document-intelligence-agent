@@ -13,12 +13,20 @@ class DocumentEmbedder:
         self.model = SentenceTransformer(model_name)
 
     def embed_chunks(self, chunks: list[Chunk]) -> list[list[float]]:
-        """Generate one embedding vector for each chunk."""
+        """Generate one normalized embedding vector for each chunk."""
         texts = [chunk.text for chunk in chunks]
 
         embeddings = self.model.encode(
             texts,
             convert_to_numpy=True,
+            normalize_embeddings=True,
         )
 
         return embeddings.tolist()
+
+    def embed_query(self, query: str) -> list[float]:
+        """Generate one normalized embedding vector for a query."""
+        return self.model.encode(
+            query,
+            normalize_embeddings=True,
+        ).tolist()
