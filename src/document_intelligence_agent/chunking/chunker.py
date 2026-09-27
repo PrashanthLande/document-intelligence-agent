@@ -28,13 +28,22 @@ class DocumentChunker:
 
         for item, _level in document.iterate_items():
             item_type = type(item).__name__
-            text = getattr(item, "text", None)
+
+            if item_type == "SectionHeaderItem":
+                text = getattr(item, "text", None)
+
+                if isinstance(text, str) and text:
+                    current_section = text
+
+                continue
+
+            if item_type == "TableItem":
+                text = self._table_to_text(item)
+            else:
+                text = getattr(item, "text", None)
 
             if not isinstance(text, str) or not text:
                 continue
-
-            if item_type == "SectionHeaderItem":
-                current_section = text
 
             provenance: list[dict[str, Any]] = []
 
@@ -53,9 +62,7 @@ class DocumentChunker:
                     }
                 )
 
-            page_numbers = sorted(
-                {entry["page"] for entry in provenance}
-            )
+            page_numbers = sorted({entry["page"] for entry in provenance})
 
             chunks.append(
                 Chunk(
@@ -69,3 +76,53 @@ class DocumentChunker:
             )
 
         return chunks
+
+    def _table_to_text(self, table: Any) -> str:
+        """Convert a Docling TableItem into deterministic retrieval text."""
+
+        table_data = getattr(table, "data", None)
+
+        if table_data is None:
+            return ""
+
+        rows = getattr(table_data, "table_cells", None)
+
+        if not rows:
+            return ""
+
+        num_rows = getattr(table_data, "num_rows", None)
+        num_cols = getattr(table_data, "num_cols", None)
+
+        if not num_rows or not num_cols:
+            return ""
+
+        grid: list[list[str]] = [
+            ["" for _ in range(num_cols)]
+            for _ in range(num_rows)
+        ]
+
+        for cell in rows:
+            row_index = getattr(cell, "start_row_offset_idx", None)
+            col_index = getattr(cell, "start_col_offset_idx", None)
+
+            if row_index is None or col_index is None:
+                continue
+
+            if not (0 <= row_index < num_rows and 0 <= col_index < num_cols):
+                continue
+
+            text = getattr(cell, "text", "")
+
+            if not isinstance(text, str):
+                text = str(text)
+
+            grid[row_index][col_index] = text.strip()
+
+        lines = [
+            " | ".join(cell for cell in row if cell)
+            for row in grid
+        ]
+
+        lines = [line for line in lines if line]
+
+        return "\n".join(lines)
