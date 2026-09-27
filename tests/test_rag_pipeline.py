@@ -70,9 +70,13 @@ def test_rag_pipeline():
     for evidence in result["evidence"]:
         assert evidence["text"]
         assert evidence["metadata"]
+        assert "provenance" in evidence["metadata"]
+        assert evidence["metadata"]["provenance"]
         assert "rerank_score" in evidence
 
     for source in result["sources"]:
         assert source["document_id"]
         assert source["page_numbers"]
-        assert source["section"]
+        assert source["section"] is not None
+        assert "provenance" in source
+        assert source["provenance"]
