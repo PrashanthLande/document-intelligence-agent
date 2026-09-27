@@ -3,9 +3,11 @@ from pathlib import Path
 from document_intelligence_agent.chunking.chunker import DocumentChunker
 from document_intelligence_agent.embeddings.embedder import DocumentEmbedder
 from document_intelligence_agent.ingestion.loader import DocumentLoader
+from document_intelligence_agent.retrieval.retriever import Retriever
 from document_intelligence_agent.vector_store.chroma_store import (
     ChromaVectorStore,
 )
+
 
 FIXTURE = Path("tests/fixtures/docling_technical_report.pdf")
 
@@ -30,16 +32,20 @@ def test_vector_retrieval():
         embeddings=embeddings,
     )
 
-    query = "What is Docling?"
+    retriever = Retriever(
+        embedder=embedder,
+        vector_store=store,
+    )
 
-    query_embedding = embedder.embed_query(query)
-
-    results = store.search(
-        query_embedding=query_embedding,
+    results = retriever.retrieve(
+        query="What is Docling?",
         top_k=3,
     )
 
-    assert results["ids"]
-    assert len(results["ids"][0]) == 3
-    assert results["documents"]
-    assert results["metadatas"]
+    assert len(results) == 3
+
+    for result in results:
+        assert result["id"]
+        assert result["text"]
+        assert result["metadata"]
+        assert "distance" in result
