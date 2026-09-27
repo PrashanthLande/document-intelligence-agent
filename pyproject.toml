@@ -10,7 +10,7 @@ authors = [
 ]
 dependencies = [
     "chromadb>=1.5.9",
-    "docling==2.126.0",
+    "docling==2.130.0",
     "openai>=3.19.2",
     "python-dotenv>=1.2.3",
     "sentence-transformers>=6.1.0",
