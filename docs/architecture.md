@@ -1,117 +1,287 @@
-
 # System Architecture
 
 ## Overview
 
 Document Intelligence Agent is designed as a document-grounded AI system.
 
-The system processes a document, converts it into structured and provenance-aware content, indexes that content for retrieval, and uses the retrieved evidence to generate grounded answers.
+The system processes a document, converts it into structured and provenance-aware content, indexes that content for retrieval, and uses retrieved evidence to generate grounded answers.
 
-## High-Level Flow
+The architecture separates document processing, retrieval, answer generation, application concerns, and future orchestration concerns.
+
+## High-Level Architecture
 
 ```text
-Document
-   │
-   ▼
-Docling
-   │
-   ▼
-Structured Document
-   │
-   ▼
-Chunking
-   │
-   ▼
-Provenance-aware Chunks
-   │
-   ▼
-Embeddings
-   │
-   ▼
-Vector Database
-   │
-   ▼
-Retrieval
-   │
-   ▼
-Reranking
-   │
-   ▼
-Best Evidence
-   │
-   ▼
-LangGraph Agent
-   │
-   ▼
-Grounded Answer
-   │
-   ▼
-Answer + Provenance
+                         Presentation
+                    ┌──────────────────┐
+                    │      UI / API    │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                       Application
+                             │
+                             ▼
+                    Orchestration Layer
+                    (when required)
+                             │
+                             ▼
+                    Domain Components
+                             │
+          ┌──────────────────┼──────────────────┐
+          │                  │                  │
+          ▼                  ▼                  ▼
+      Ingestion          Retrieval            RAG
+          │                  │                  │
+          ▼                  │                  │
+      Chunking               │                  │
+          │                  │                  │
+          ▼                  │                  │
+     Embeddings              │                  │
+          │                  │                  │
+          ▼                  │                  │
+     Vector Store ───────────┘                  │
+                             │                  │
+                             └──── Reranking ───┘
+                                                │
+                                                ▼
+                                      Grounded Answer
+                                                │
+                                                ▼
+                                      Answer + Provenance
 ````
+
+## Architectural Layers
+
+### 1. Presentation
+
+The presentation layer will provide user-facing interfaces such as a web UI or API.
+
+Its responsibilities include:
+
+* Document upload
+* User question input
+* Answer display
+* Source display
+* Evidence visualization
+
+Presentation code should not contain document processing, retrieval, or generation logic.
+
+### 2. Application
+
+The application layer will translate external requests into application-level use cases.
+
+Potential responsibilities include:
+
+* Accepting a question and document scope
+* Coordinating a document question-answering request
+* Preparing responses for the presentation layer
+* Managing application-level request and response models
+
+The application layer should depend on domain capabilities rather than UI implementation details.
+
+### 3. Orchestration
+
+The orchestration layer represents workflow coordination across multiple components.
+
+The current retrieval and RAG workflow is deterministic and does not require an orchestration framework.
+
+An orchestration layer becomes useful if the system requires capabilities such as:
+
+* Branching workflows
+* Iterative retrieval
+* Query rewriting
+* Multiple retrieval strategies
+* Tool usage
+* Stateful execution
+* Human-in-the-loop decisions
+* Retry or recovery workflows
+* Durable execution
+
+An orchestration framework will be evaluated only when such requirements exist.
+
+The orchestration layer should coordinate domain components rather than absorb their responsibilities.
+
+### 4. Domain Components
+
+The domain components contain the core document intelligence capabilities.
+
+```text
+Ingestion
+    ↓
+Chunking
+    ↓
+Embeddings
+    ↓
+Vector Store
+    ↓
+Retrieval
+    ↓
+Reranking
+    ↓
+RAG
+```
+
+Each component should have a focused responsibility and remain independently testable.
 
 ## Components
 
-### 1. Document Ingestion
+### Document Ingestion
 
-Docling is responsible for processing supported documents and converting them into a structured representation.
+Docling processes supported documents and converts them into a structured document representation.
 
-The ingestion layer will preserve document structure and provenance wherever available.
+The ingestion layer should preserve document structure and provenance wherever available.
 
-### 2. Chunking
+### Chunking
 
 The structured document is converted into retrieval-ready chunks.
 
-Chunks should preserve useful contextual information such as:
+Chunks preserve useful contextual and provenance information such as:
 
 * Document
 * Page
 * Section
-* Paragraph
-* Table
+* Item type
 * Source location
+* Bounding box
+* Character span
 
-### 3. Embeddings
+Tables are converted into deterministic retrieval text while retaining their source provenance.
+
+### Embeddings
 
 Each chunk is converted into a vector representation.
 
-The same embedding space will be used to represent user queries so that semantic similarity can be measured between queries and document chunks.
+The same embedding space is used to represent user queries so that semantic similarity can be measured between queries and document chunks.
 
-### 4. Vector Database
+### Vector Store
 
 Embeddings and their associated metadata are stored in a vector database.
 
-The initial implementation will use ChromaDB.
+The current implementation uses ChromaDB.
 
-### 5. Retrieval
+The vector store is an infrastructure component and should not determine the behavior of higher-level retrieval or answer-generation logic.
 
-When a user asks a question, the question is converted into an embedding and used to retrieve potentially relevant document chunks.
+### Retrieval
 
-### 6. Reranking
+A user query is converted into an embedding and used to retrieve potentially relevant document chunks.
+
+The retrieval component should focus on selecting candidate evidence and should not contain answer-generation or presentation logic.
+
+### Reranking
 
 Retrieved candidates are reranked to identify the evidence most relevant to the user's question.
 
-### 7. RAG
+The reranker operates on retrieved candidates and does not own document ingestion or answer generation.
 
-The highest-quality evidence is provided to the language model as context.
+### RAG
 
-The generated answer should remain grounded in the retrieved document evidence.
+The RAG layer uses selected evidence to generate a grounded answer.
 
-### 8. LangGraph Agent
+Its responsibilities include:
 
-LangGraph will orchestrate the document question-answering workflow.
+* Constructing the evidence context
+* Generating a grounded answer
+* Returning source information associated with the evidence
 
-The agent layer will be introduced after the core retrieval pipeline is working independently.
+The RAG layer should not depend directly on UI concerns.
 
-### 9. Provenance
+## Provenance
+
+Provenance is a core architectural requirement.
 
 The system should retain enough metadata to identify where retrieved evidence originated in the source document.
 
-The final response should expose relevant provenance such as page, section, paragraph, or table.
+Relevant provenance may include:
 
-## Design Principle
+* Document identifier
+* Page number
+* Section
+* Item type
+* Bounding box
+* Character span
 
-The system is built incrementally.
+The provenance should survive the pipeline from document extraction through retrieval and answer generation.
 
-Each component should be independently understandable, testable, and replaceable before being connected to the next component.
+This information provides the foundation for a future evidence viewer capable of identifying the source region associated with an answer.
 
+## Separation of Concerns
+
+The architecture follows a single-responsibility approach.
+
+```text
+Presentation
+    → User interaction
+
+Application
+    → Use cases and request/response coordination
+
+Orchestration
+    → Workflow and state coordination when required
+
+Ingestion
+    → Document processing
+
+Chunking
+    → Retrieval-ready document representation
+
+Embeddings
+    → Vector representation
+
+Vector Store
+    → Vector storage and similarity search
+
+Retrieval
+    → Candidate evidence selection
+
+Reranking
+    → Relevance refinement
+
+RAG
+    → Grounded answer generation
+```
+
+A component should not take ownership of responsibilities belonging to another layer merely for convenience.
+
+## Dependency Direction
+
+The intended dependency direction is:
+
+```text
+Presentation
+      ↓
+Application
+      ↓
+Orchestration
+      ↓
+Domain Components
+      ↓
+Infrastructure
+```
+
+Infrastructure implementations such as ChromaDB and model clients should remain replaceable behind focused component interfaces where practical.
+
+Domain components should not depend on presentation concerns.
+
+## Design Principles
+
+### Technology Follows Requirements
+
+A technology should be introduced because it solves a demonstrated requirement.
+
+The architecture therefore does not require an orchestration framework for the current deterministic RAG pipeline.
+
+### Independent Components
+
+Each component should be independently understandable, testable, and replaceable.
+
+### Provenance Preservation
+
+Provenance should be preserved throughout the pipeline rather than reconstructed after answer generation.
+
+### Replaceable Infrastructure
+
+Model providers, vector databases, and other infrastructure should be replaceable without requiring changes to unrelated domain components.
+
+### Incremental Architecture
+
+The system should evolve by adding capabilities when requirements justify them rather than introducing infrastructure speculatively.
 
