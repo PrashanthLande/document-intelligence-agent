@@ -83,6 +83,7 @@ Document evidence:
                     "page_numbers": metadata.get("page_numbers"),
                     "section": metadata.get("section"),
                     "item_types": metadata.get("item_types"),
+                    "provenance": metadata.get("provenance"),
                 }
             )
 
