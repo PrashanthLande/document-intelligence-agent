@@ -1,3 +1,5 @@
+import json
+
 import chromadb
 from chromadb.api.types import QueryResult
 
@@ -42,6 +44,7 @@ class ChromaVectorStore:
                 ),
                 "section": chunk.section or "",
                 "item_types": ",".join(chunk.item_types),
+                "provenance": json.dumps(chunk.provenance),
             }
             for chunk in chunks
         ]
@@ -59,6 +62,7 @@ class ChromaVectorStore:
             top_k: int = 5,
     ) -> QueryResult:
         """Search for the most relevant chunks."""
+
         return self.collection.query(
             query_embeddings=[query_embedding],
             n_results=top_k,
