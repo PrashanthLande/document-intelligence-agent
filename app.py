@@ -130,8 +130,7 @@ def format_sources(evidence: list[dict]) -> str:
         lines.append(
             f"**{index}. {metadata.get('document_id')}**, "
             f"page {metadata.get('page_numbers') or '?'}, "
-            f"section: {metadata.get('section') or 'n/a'} "
-            f"(relevance score {item['rerank_score']:.2f})\n\n"
+            f"section: {metadata.get('section') or 'n/a'}\n\n"
             f"> {snippet}"
         )
 
