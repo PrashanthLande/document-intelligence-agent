@@ -67,3 +67,39 @@ def test_table_chunks_preserve_structure():
 
     assert any("\n" in chunk.text for chunk in table_chunks)
     assert any(" | " in chunk.text for chunk in table_chunks)
+
+
+def test_short_items_are_merged():
+    document = DocumentLoader().load(FIXTURE)
+
+    merged = DocumentChunker().chunk(document, document_id=FIXTURE.name)
+    unmerged = DocumentChunker(max_chars=0).chunk(
+        document,
+        document_id=FIXTURE.name,
+    )
+
+    assert len(merged) < len(unmerged)
+
+
+def test_merged_chunks_respect_limits():
+    document = DocumentLoader().load(FIXTURE)
+
+    chunker = DocumentChunker()
+    chunks = chunker.chunk(document, document_id=FIXTURE.name)
+
+    for chunk in chunks:
+        item_count = len({entry["text_offset"] for entry in chunk.provenance})
+
+        if item_count > 1:
+            assert len(chunk.text) <= chunker.max_chars
+            assert "TableItem" not in chunk.item_types
+
+
+def test_merged_provenance_offsets_point_into_text():
+    document = DocumentLoader().load(FIXTURE)
+
+    chunks = DocumentChunker().chunk(document, document_id=FIXTURE.name)
+
+    for chunk in chunks:
+        for entry in chunk.provenance:
+            assert 0 <= entry["text_offset"] < len(chunk.text)

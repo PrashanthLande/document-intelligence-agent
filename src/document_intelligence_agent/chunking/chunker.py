@@ -16,13 +16,31 @@ class Chunk:
 
 
 class DocumentChunker:
-    """Create provenance-aware chunks from a DoclingDocument."""
+    """Create provenance-aware chunks from a DoclingDocument.
+
+    Consecutive items in the same section are merged up to `max_chars`, so
+    short items (captions, list items, labels) don't become chunks on their
+    own. Tables always stay standalone. A single item longer than `max_chars`
+    is kept whole. The default fits within the 256-token input limit of
+    all-MiniLM-L6-v2.
+    """
+
+    def __init__(self, max_chars: int = 1000) -> None:
+        self.max_chars = max_chars
 
     def chunk(
             self,
             document: DoclingDocument,
             document_id: str | Path,
     ) -> list[Chunk]:
+        return self._merge(self._item_chunks(document, document_id))
+
+    def _item_chunks(
+            self,
+            document: DoclingDocument,
+            document_id: str | Path,
+    ) -> list[Chunk]:
+        """Create one chunk per Docling item."""
         chunks: list[Chunk] = []
         current_section: str | None = None
 
@@ -59,6 +77,8 @@ class DocumentChunker:
                         },
                         "coord_origin": prov.bbox.coord_origin.value,
                         "charspan": prov.charspan,
+                        # Start of this item's text within the chunk text.
+                        "text_offset": 0,
                     }
                 )
 
@@ -76,6 +96,44 @@ class DocumentChunker:
             )
 
         return chunks
+
+    def _merge(self, chunks: list[Chunk]) -> list[Chunk]:
+        """Merge consecutive same-section, non-table chunks up to max_chars."""
+        merged: list[Chunk] = []
+
+        for chunk in chunks:
+            previous = merged[-1] if merged else None
+
+            if previous is None or not self._can_merge(previous, chunk):
+                merged.append(chunk)
+                continue
+
+            offset = len(previous.text) + 1
+            previous.text = f"{previous.text}\n{chunk.text}"
+
+            for entry in chunk.provenance:
+                previous.provenance.append(
+                    {**entry, "text_offset": entry["text_offset"] + offset}
+                )
+
+            previous.page_numbers = sorted(
+                set(previous.page_numbers) | set(chunk.page_numbers)
+            )
+
+            for item_type in chunk.item_types:
+                if item_type not in previous.item_types:
+                    previous.item_types.append(item_type)
+
+        return merged
+
+    def _can_merge(self, previous: Chunk, chunk: Chunk) -> bool:
+        if "TableItem" in previous.item_types or "TableItem" in chunk.item_types:
+            return False
+
+        if previous.section != chunk.section:
+            return False
+
+        return len(previous.text) + 1 + len(chunk.text) <= self.max_chars
 
     def _table_to_text(self, table: Any) -> str:
         """Convert a Docling TableItem into deterministic retrieval text."""
