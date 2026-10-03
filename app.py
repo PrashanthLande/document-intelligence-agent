@@ -137,32 +137,59 @@ def format_sources(evidence: list[dict]) -> str:
     return "\n\n".join(lines)
 
 
+def set_question_enabled(collection_name: str | None) -> tuple[dict, dict]:
+    """Enable the question box and Ask button only once a document is ready."""
+    ready = collection_name is not None
+    return gr.update(interactive=ready), gr.update(interactive=ready)
+
+
 with gr.Blocks(title="Document Intelligence Agent") as demo:
     gr.Markdown(
         "# Document Intelligence Agent\n"
-        "Upload a document, then ask questions about it. "
-        "Answers come with the evidence they were based on."
+        "Upload a document and it will be processed automatically, then ask "
+        "questions about it. Answers come with the evidence they were based on."
     )
 
     # Vector store collection for the current session's upload.
     collection_state = gr.State(None)
 
     file_input = gr.File(label="Document", type="filepath")
-    process_button = gr.Button("Process document", variant="primary")
     status = gr.Markdown()
 
-    question_input = gr.Textbox(label="Question", placeholder="Ask about the document...")
-    ask_button = gr.Button("Ask", variant="primary")
+    question_input = gr.Textbox(
+        label="Question",
+        placeholder="Ask about the document...",
+        interactive=False,
+    )
+    ask_button = gr.Button("Ask", variant="primary", interactive=False)
 
     answer_output = gr.Markdown(label="Answer")
 
     with gr.Accordion("Sources", open=True):
         sources_output = gr.Markdown()
 
-    process_button.click(
+    file_input.upload(
         process_document,
         inputs=[file_input],
         outputs=[status, collection_state],
+    )
+
+    file_input.clear(
+        lambda: ("", None),
+        outputs=[status, collection_state],
+    )
+
+    # Answers belong to the previous document.
+    gr.on(
+        triggers=[file_input.upload, file_input.clear],
+        fn=lambda: ("", ""),
+        outputs=[answer_output, sources_output],
+    )
+
+    collection_state.change(
+        set_question_enabled,
+        inputs=[collection_state],
+        outputs=[question_input, ask_button],
     )
 
     gr.on(
