@@ -227,3 +227,4 @@ chroma/
 
 # Test documents
 tests/fixtures/
+/scratch/
