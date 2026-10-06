@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from document_intelligence_agent.chunking.chunker import DocumentChunker
+from document_intelligence_agent.chunking.chunker import Chunk, DocumentChunker
 from document_intelligence_agent.embeddings.embedder import DocumentEmbedder
 from document_intelligence_agent.ingestion.loader import DocumentLoader
 from document_intelligence_agent.vector_store.chroma_store import (
@@ -72,3 +72,65 @@ def test_vector_store_preserves_provenance():
         assert "bbox" in provenance[0]
         assert "coord_origin" in provenance[0]
         assert "charspan" in provenance[0]
+
+
+def make_chunk(document_id: str, text: str) -> Chunk:
+    return Chunk(
+        text=text,
+        document_id=document_id,
+        page_numbers=[1],
+        section=None,
+        item_types=["TextItem"],
+        provenance=[],
+    )
+
+
+def make_two_document_store(collection_name: str) -> ChromaVectorStore:
+    """A store with two chunks from a.pdf and one from b.pdf."""
+    store = ChromaVectorStore(collection_name=collection_name)
+
+    store.add(
+        chunks=[
+            make_chunk("a.pdf", "first chunk of a"),
+            make_chunk("a.pdf", "second chunk of a"),
+            make_chunk("b.pdf", "only chunk of b"),
+        ],
+        embeddings=[[1.0, 0.0], [0.9, 0.1], [0.8, 0.2]],
+    )
+
+    return store
+
+
+def result_document_ids(result) -> set[str]:
+    return {metadata["document_id"] for metadata in result["metadatas"][0]}
+
+
+def test_search_without_filter_searches_all_documents():
+    store = make_two_document_store("test_search_all")
+
+    result = store.search(query_embedding=[1.0, 0.0], top_k=3)
+
+    assert result_document_ids(result) == {"a.pdf", "b.pdf"}
+
+
+def test_search_filters_by_document_ids():
+    store = make_two_document_store("test_search_filter")
+
+    result = store.search(
+        query_embedding=[1.0, 0.0],
+        top_k=3,
+        document_ids=["b.pdf"],
+    )
+
+    assert result_document_ids(result) == {"b.pdf"}
+    assert len(result["ids"][0]) == 1
+
+
+def test_delete_document_removes_only_its_chunks():
+    store = make_two_document_store("test_delete_document")
+
+    store.delete_document("a.pdf")
+
+    remaining = store.collection.get()
+
+    assert {m["document_id"] for m in remaining["metadatas"]} == {"b.pdf"}

@@ -23,12 +23,17 @@ class RAGPipeline:
             query: str,
             retrieval_k: int = 5,
             rerank_k: int = 3,
+            document_ids: list[str] | None = None,
     ) -> dict[str, Any]:
-        """Answer a question using retrieved and reranked evidence."""
+        """Answer a question using retrieved and reranked evidence.
+
+        If `document_ids` is given, only those documents are searched.
+        """
 
         retrieved = self.retriever.retrieve(
             query=query,
             top_k=retrieval_k,
+            document_ids=document_ids,
         )
 
         reranked = self.reranker.rerank(

@@ -56,14 +56,28 @@ class ChromaVectorStore:
             metadatas=metadatas,
         )
 
+    def delete_document(self, document_id: str) -> None:
+        """Remove all chunks belonging to one document."""
+        self.collection.delete(where={"document_id": document_id})
+
     def search(
             self,
             query_embedding: list[float],
             top_k: int = 5,
+            document_ids: list[str] | None = None,
     ) -> QueryResult:
-        """Search for the most relevant chunks."""
+        """Search for the most relevant chunks.
+
+        If `document_ids` is given, only chunks from those documents are
+        searched; otherwise the whole collection is.
+        """
+        where = None
+
+        if document_ids is not None:
+            where = {"document_id": {"$in": document_ids}}
 
         return self.collection.query(
             query_embeddings=[query_embedding],
             n_results=top_k,
+            where=where,
         )

@@ -1,0 +1,117 @@
+/*
+ * Styles for app.py. Class names here match the `elem_classes` set in
+ * app.py. Colours use Gradio's theme variables (--block-..., --body-...),
+ * so light and dark mode both work without extra rules.
+ */
+
+/*
+ * The three side-by-side panels. The frame itself comes from Gradio's
+ * gr.Column(variant="panel"); this only gives them the same height.
+ */
+.app-panel {
+    min-height: 700px;
+    justify-content: flex-start !important;
+}
+
+/* Gradio makes column items grow to fill spare height; keep natural size. */
+.app-panel > * {
+    flex-grow: 0 !important;
+}
+
+/* --- Sources panel --- */
+
+/* One row per document: name + status on the left, remove button on the right. */
+.source-row {
+    border: 1px solid var(--block-border-color);
+    border-radius: var(--radius-md);
+    padding: 6px 8px;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+}
+
+/* The row already has a border, so drop the checkbox's own box inside it. */
+.source-row > *,
+.source-row label {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+/* A small, quiet ✕ that turns red on hover instead of a big grey block. */
+button.remove-source {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--body-text-color-subdued) !important;
+    padding: 4px 8px !important;
+    align-self: center;
+}
+
+button.remove-source:hover {
+    color: var(--color-red-500, #ef4444) !important;
+}
+
+/* --- Evidence panel --- */
+
+/* Scroll inside the panel when there are many sources. */
+.evidence-panel {
+    max-height: 640px;
+    overflow-y: auto;
+}
+
+.evidence-empty,
+.evidence-question {
+    color: var(--body-text-color-subdued);
+    font-size: var(--text-sm);
+    margin: 0 0 12px;
+}
+
+.evidence-question strong {
+    color: var(--body-text-color);
+}
+
+/* One card per source, styled like the chat bubbles. */
+.evidence-card {
+    border: 1px solid var(--block-border-color);
+    border-radius: var(--radius-lg);
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    background: var(--background-fill-secondary);
+}
+
+.evidence-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* The round number badge; later steps link [n] in answers to it. */
+.evidence-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.evidence-document {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.evidence-details {
+    color: var(--body-text-color-subdued);
+    font-size: var(--text-sm);
+    margin: 4px 0 6px 30px;
+}
+
+.evidence-snippet {
+    margin: 0 0 0 30px;
+    line-height: 1.5;
+}

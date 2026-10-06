@@ -21,13 +21,18 @@ class Retriever:
             self,
             query: str,
             top_k: int = 5,
+            document_ids: list[str] | None = None,
     ) -> list[dict[str, Any]]:
-        """Retrieve the top-k chunks relevant to a query."""
+        """Retrieve the top-k chunks relevant to a query.
+
+        If `document_ids` is given, only those documents are searched.
+        """
         query_embedding = self.embedder.embed_query(query)
 
         results = self.vector_store.search(
             query_embedding=query_embedding,
             top_k=top_k,
+            document_ids=document_ids,
         )
 
         retrieved_chunks: list[dict[str, Any]] = []
