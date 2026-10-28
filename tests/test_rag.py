@@ -1,8 +1,8 @@
 from document_intelligence_agent.rag.generator import RAGGenerator
 
 
-def test_rag_generator():
-    generator = RAGGenerator()
+def test_rag_generator(fake_llm):
+    generator = RAGGenerator(llm=fake_llm)
 
     evidence = [
         {
@@ -21,8 +21,12 @@ def test_rag_generator():
         evidence=evidence,
     )
 
-    assert result["answer"]
-    assert isinstance(result["answer"], str)
+    assert result["answer"] == "Docling converts documents."
+
+    # The prompt sent to the LLM carries the question and the evidence.
+    assert len(fake_llm.prompts) == 1
+    assert "What is Docling?" in fake_llm.prompts[0]
+    assert "Docling is a document processing framework." in fake_llm.prompts[0]
 
     assert result["sources"]
     assert len(result["sources"]) == 1

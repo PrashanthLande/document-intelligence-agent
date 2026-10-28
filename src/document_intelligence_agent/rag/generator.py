@@ -1,28 +1,16 @@
-import os
 from typing import Any
 
-from dotenv import load_dotenv
-from openai import OpenAI
+from document_intelligence_agent.rag.llm import Generator
 
 
 class RAGGenerator:
-    """Generate grounded answers from retrieved document evidence."""
+    """Generate grounded answers from retrieved document evidence.
 
-    def __init__(
-            self,
-            model_name: str = "gpt-5.6-luna",
-    ) -> None:
-        load_dotenv()
+    Builds the prompt and the source list; the LLM backend is injected.
+    """
 
-        api_key = os.getenv("OPENAI_API_KEY")
-
-        if not api_key:
-            raise ValueError(
-                "OPENAI_API_KEY environment variable is not set."
-            )
-
-        self.client = OpenAI(api_key=api_key)
-        self.model_name = model_name
+    def __init__(self, llm: Generator) -> None:
+        self.llm = llm
 
     def generate(
             self,
@@ -67,10 +55,7 @@ Document evidence:
 {context}
 """.strip()
 
-        response = self.client.responses.create(
-            model=self.model_name,
-            input=prompt,
-        )
+        answer = self.llm.generate(prompt)
 
         sources = []
 
@@ -88,6 +73,6 @@ Document evidence:
             )
 
         return {
-            "answer": response.output_text,
+            "answer": answer,
             "sources": sources,
         }

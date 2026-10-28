@@ -19,7 +19,9 @@ from typing import Any, Literal, TypedDict, TypeVar
 import gradio as gr
 
 from document_intelligence_agent.chunking.chunker import DocumentChunker
+from document_intelligence_agent.config import Settings
 from document_intelligence_agent.embeddings.embedder import DocumentEmbedder
+from document_intelligence_agent.factory import build_generator
 from document_intelligence_agent.ingestion.loader import DocumentLoader
 from document_intelligence_agent.rag.generator import RAGGenerator
 from document_intelligence_agent.rag.pipeline import RAGPipeline
@@ -32,11 +34,12 @@ from document_intelligence_agent.vector_store.chroma_store import (
 logger = logging.getLogger(__name__)
 
 # Models are loaded once at startup and shared by all users.
+settings = Settings()
 loader = DocumentLoader()
 chunker = DocumentChunker()
 embedder = DocumentEmbedder()
 reranker = DocumentReranker()
-generator = RAGGenerator()
+generator = RAGGenerator(llm=build_generator(settings.generator))
 
 
 class SourceInfo(TypedDict):

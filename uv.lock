@@ -869,7 +869,7 @@ dependencies = [
     { name = "docling" },
     { name = "gradio" },
     { name = "openai" },
-    { name = "python-dotenv" },
+    { name = "pydantic-settings" },
     { name = "sentence-transformers" },
 ]
 
@@ -884,7 +884,7 @@ requires-dist = [
     { name = "docling", specifier = "==2.130.0" },
     { name = "gradio", specifier = ">=6.29.1" },
     { name = "openai", specifier = ">=3.19.2" },
-    { name = "python-dotenv", specifier = ">=1.2.3" },
+    { name = "pydantic-settings", specifier = ">=2.15.0" },
     { name = "sentence-transformers", specifier = ">=6.1.0" },
 ]
 

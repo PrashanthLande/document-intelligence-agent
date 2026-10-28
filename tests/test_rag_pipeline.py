@@ -16,7 +16,7 @@ from document_intelligence_agent.vector_store.chroma_store import (
 FIXTURE = Path("tests/fixtures/docling_technical_report.pdf")
 
 
-def test_rag_pipeline():
+def test_rag_pipeline(fake_llm):
     document = DocumentLoader().load(FIXTURE)
 
     chunks = DocumentChunker().chunk(
@@ -44,7 +44,7 @@ def test_rag_pipeline():
 
     reranker = DocumentReranker()
 
-    generator = RAGGenerator()
+    generator = RAGGenerator(llm=fake_llm)
 
     pipeline = RAGPipeline(
         retriever=retriever,
