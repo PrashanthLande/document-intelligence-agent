@@ -1,0 +1,150 @@
+{
+  "documents": [
+    {
+      "path": "tests/fixtures/docling_technical_report.pdf",
+      "source_url": "https://arxiv.org/pdf/2408.09869v1"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q01",
+      "question": "Under which software license is Docling distributed?",
+      "document": "docling_technical_report.pdf",
+      "pages": [1, 5],
+      "evidence": ["MITlicensed", "MIT license"]
+    },
+    {
+      "id": "q02",
+      "question": "Which models does Docling use to understand page layout and tables?",
+      "document": "docling_technical_report.pdf",
+      "pages": [1, 3],
+      "evidence": ["layout analysis (DocLayNet)", "TableFormer [12, 9]"]
+    },
+    {
+      "id": "q03",
+      "question": "What file formats can a converted document be exported to?",
+      "document": "docling_technical_report.pdf",
+      "pages": [1, 2, 4],
+      "evidence": ["JSON or Markdown"]
+    },
+    {
+      "id": "q04",
+      "question": "Does Docling support running on GPUs or Apple silicon?",
+      "document": "docling_technical_report.pdf",
+      "pages": [2, 5],
+      "evidence": ["different accelerators", "GPU acceleration support"]
+    },
+    {
+      "id": "q05",
+      "question": "How do I get Docling onto my machine?",
+      "document": "docling_technical_report.pdf",
+      "pages": [2],
+      "evidence": ["install the docling package from PyPI"]
+    },
+    {
+      "id": "q06",
+      "question": "Where are the model files stored when they are first fetched?",
+      "document": "docling_technical_report.pdf",
+      "pages": [2],
+      "evidence": ["local huggingface datasets cache"]
+    },
+    {
+      "id": "q07",
+      "question": "What is the first step applied to every document in the pipeline?",
+      "document": "docling_technical_report.pdf",
+      "pages": [2],
+      "evidence": ["first parsed by a PDF backend"]
+    },
+    {
+      "id": "q08",
+      "question": "Why weren't existing Python PDF libraries good enough for the authors?",
+      "document": "docling_technical_report.pdf",
+      "pages": [2, 3],
+      "evidence": ["restrictive licensing"]
+    },
+    {
+      "id": "q09",
+      "question": "What low-level library is the custom PDF parser built on?",
+      "document": "docling_technical_report.pdf",
+      "pages": [3],
+      "evidence": ["low-level qpdf"]
+    },
+    {
+      "id": "q10",
+      "question": "Which object detection architecture is the layout model based on?",
+      "document": "docling_technical_report.pdf",
+      "pages": [3],
+      "evidence": ["derived from RT-DETR"]
+    },
+    {
+      "id": "q11",
+      "question": "At what resolution are page images given to the layout model?",
+      "document": "docling_technical_report.pdf",
+      "pages": [3],
+      "evidence": ["72 dpi"]
+    },
+    {
+      "id": "q12",
+      "question": "How long does table structure recognition take per table on a CPU?",
+      "document": "docling_technical_report.pdf",
+      "pages": [4],
+      "evidence": ["between 2 and 6 seconds"]
+    },
+    {
+      "id": "q13",
+      "question": "Which third-party engine handles text recognition for scanned pages?",
+      "document": "docling_technical_report.pdf",
+      "pages": [4],
+      "evidence": ["rely on EasyOCR"]
+    },
+    {
+      "id": "q14",
+      "question": "How fast is OCR when running without a GPU?",
+      "document": "docling_technical_report.pdf",
+      "pages": [4],
+      "evidence": ["30 seconds per page"]
+    },
+    {
+      "id": "q15",
+      "question": "How can a developer plug their own models into the processing chain?",
+      "document": "docling_technical_report.pdf",
+      "pages": [4],
+      "evidence": ["BaseModelPipeline"]
+    },
+    {
+      "id": "q16",
+      "question": "On what machines were the speed benchmarks measured?",
+      "document": "docling_technical_report.pdf",
+      "pages": [4],
+      "evidence": ["MacBook Pro M3 Max"]
+    },
+    {
+      "id": "q17",
+      "question": "How many pages does the benchmark test set contain?",
+      "document": "docling_technical_report.pdf",
+      "pages": [4, 5],
+      "evidence": ["225 pages"]
+    },
+    {
+      "id": "q18",
+      "question": "What is the peak memory usage with the native PDF backend?",
+      "document": "docling_technical_report.pdf",
+      "pages": [5],
+      "evidence": ["6.20 GB", "6.16 GB"]
+    },
+    {
+      "id": "q19",
+      "question": "Which backend should be used on machines with very limited resources?",
+      "document": "docling_technical_report.pdf",
+      "pages": [4, 5],
+      "evidence": ["configuring the pypdfium backend"]
+    },
+    {
+      "id": "q20",
+      "question": "What tool do the authors offer for building RAG applications on Docling output?",
+      "document": "docling_technical_report.pdf",
+      "pages": [5],
+      "evidence": ["quackling"]
+    }
+  ]
+}

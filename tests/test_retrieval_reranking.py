@@ -2,7 +2,6 @@ from pathlib import Path
 
 from document_intelligence_agent.chunking.chunker import DocumentChunker
 from document_intelligence_agent.embeddings.embedder import DocumentEmbedder
-from document_intelligence_agent.ingestion.loader import DocumentLoader
 from document_intelligence_agent.reranking.reranker import (
     DocumentReranker,
 )
@@ -14,9 +13,8 @@ from document_intelligence_agent.vector_store.chroma_store import (
 FIXTURE = Path("tests/fixtures/docling_technical_report.pdf")
 
 
-def test_retrieval_and_reranking():
+def test_retrieval_and_reranking(document):
     # 1. Load document
-    document = DocumentLoader().load(FIXTURE)
 
     # 2. Create provenance-aware chunks
     chunks = DocumentChunker().chunk(

@@ -1,15 +1,12 @@
 from pathlib import Path
 
 from document_intelligence_agent.chunking.chunker import DocumentChunker
-from document_intelligence_agent.ingestion.loader import DocumentLoader
 
 
 FIXTURE = Path("tests/fixtures/docling_technical_report.pdf")
 
 
-def test_document_chunking():
-    document = DocumentLoader().load(FIXTURE)
-
+def test_document_chunking(document):
     chunks = DocumentChunker().chunk(
         document,
         document_id=FIXTURE.name,
@@ -27,10 +24,7 @@ def test_document_chunking():
     assert first.provenance
 
 
-def test_chunk_table_items():
-    loader = DocumentLoader()
-    document = loader.load(FIXTURE)
-
+def test_chunk_table_items(document):
     chunker = DocumentChunker()
     chunks = chunker.chunk(
         document=document,
@@ -49,10 +43,7 @@ def test_chunk_table_items():
     assert all(chunk.provenance for chunk in table_chunks)
 
 
-def test_table_chunks_preserve_structure():
-    loader = DocumentLoader()
-    document = loader.load(FIXTURE)
-
+def test_table_chunks_preserve_structure(document):
     chunker = DocumentChunker()
     chunks = chunker.chunk(
         document=document,
@@ -69,9 +60,7 @@ def test_table_chunks_preserve_structure():
     assert any(" | " in chunk.text for chunk in table_chunks)
 
 
-def test_short_items_are_merged():
-    document = DocumentLoader().load(FIXTURE)
-
+def test_short_items_are_merged(document):
     merged = DocumentChunker().chunk(document, document_id=FIXTURE.name)
     unmerged = DocumentChunker(max_chars=0).chunk(
         document,
@@ -81,9 +70,7 @@ def test_short_items_are_merged():
     assert len(merged) < len(unmerged)
 
 
-def test_merged_chunks_respect_limits():
-    document = DocumentLoader().load(FIXTURE)
-
+def test_merged_chunks_respect_limits(document):
     chunker = DocumentChunker()
     chunks = chunker.chunk(document, document_id=FIXTURE.name)
 
@@ -95,9 +82,7 @@ def test_merged_chunks_respect_limits():
             assert "TableItem" not in chunk.item_types
 
 
-def test_merged_provenance_offsets_point_into_text():
-    document = DocumentLoader().load(FIXTURE)
-
+def test_merged_provenance_offsets_point_into_text(document):
     chunks = DocumentChunker().chunk(document, document_id=FIXTURE.name)
 
     for chunk in chunks:

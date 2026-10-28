@@ -194,7 +194,7 @@ Each component should be independently understandable and testable before being 
 | Vector Database     | ChromaDB                              |
 | Retrieval           | Custom retrieval component            |
 | Reranking           | Sentence Transformers CrossEncoder    |
-| RAG                 | OpenAI Responses API                  |
+| RAG                 | Transformers (local) or any OpenAI-compatible API, chosen by config |
 | Language            | Python                                |
 | UI / API            | Planned                               |
 | Orchestration       | To be evaluated based on requirements |
@@ -204,8 +204,11 @@ Each component should be independently understandable and testable before being 
 ```text
 src/
 └── document_intelligence_agent/
+    ├── config.py
+    ├── factory.py
     ├── ingestion/
-    │   └── loader.py
+    │   ├── loader.py
+    │   └── cache.py
     ├── chunking/
     │   └── chunker.py
     ├── embeddings/
@@ -216,9 +219,16 @@ src/
     │   └── retriever.py
     ├── reranking/
     │   └── reranker.py
-    └── rag/
-        ├── generator.py
-        └── pipeline.py
+    ├── rag/
+    │   ├── llm.py
+    │   ├── generator.py
+    │   └── pipeline.py
+    └── evaluation/
+        ├── dataset.py
+        ├── metrics.py
+        └── run.py
+eval/
+└── docling_technical_report.json
 ```
 
 ## Testing
@@ -243,6 +253,28 @@ Place local test documents in:
 ```text
 tests/fixtures/
 ```
+
+## Evaluation
+
+Component choices are measured, not assumed. `eval/` holds question sets with known answer locations: each question lists the page(s) and a short evidence phrase. A retrieved chunk counts as relevant if it is from the right document, on a gold page, and contains an evidence phrase.
+
+```bash
+uv run python -m document_intelligence_agent.evaluation.run eval/docling_technical_report.json
+uv run python -m document_intelligence_agent.evaluation.run eval/docling_technical_report.json --retrieval-k 20
+```
+
+The document itself is not in the repository; each question set names its source URL. Converted documents are cached in `.cache/eval/`, so only the first run pays the conversion cost.
+
+The report shows hit@k (share of questions with a relevant chunk in the top k) and MRR (mean reciprocal rank of the first relevant chunk), both for vector retrieval alone and after reranking. It also lists questions whose answer is in no chunk at all, which points to parsing or chunking rather than retrieval.
+
+Results on `docling_technical_report.json` (20 questions, 46 chunks):
+
+| Configuration | Stage | hit@1 | hit@3 | MRR |
+| --- | --- | --- | --- | --- |
+| MiniLM-L6 embeddings, retrieve 5 → rerank 3 (baseline) | retrieval | 0.70 | 0.70 | 0.74 |
+| | reranked | 0.75 | 0.85 | 0.79 |
+| MiniLM-L6 embeddings, retrieve 20 → rerank 3 | retrieval | 0.70 | 0.70 | 0.76 |
+| | reranked | 0.90 | 0.95 | 0.92 |
 
 ## Development Philosophy
 

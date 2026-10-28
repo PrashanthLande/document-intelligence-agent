@@ -2,7 +2,6 @@ from pathlib import Path
 
 from document_intelligence_agent.chunking.chunker import DocumentChunker
 from document_intelligence_agent.embeddings.embedder import DocumentEmbedder
-from document_intelligence_agent.ingestion.loader import DocumentLoader
 from document_intelligence_agent.retrieval.retriever import Retriever
 from document_intelligence_agent.vector_store.chroma_store import (
     ChromaVectorStore,
@@ -11,9 +10,7 @@ from document_intelligence_agent.vector_store.chroma_store import (
 FIXTURE = Path("tests/fixtures/docling_technical_report.pdf")
 
 
-def test_retriever():
-    document = DocumentLoader().load(FIXTURE)
-
+def test_retriever(document):
     chunks = DocumentChunker().chunk(
         document,
         document_id=FIXTURE.name,

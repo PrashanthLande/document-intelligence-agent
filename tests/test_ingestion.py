@@ -9,11 +9,8 @@ from document_intelligence_agent.ingestion.loader import DocumentLoader
 FIXTURE = Path("tests/fixtures/docling_technical_report.pdf")
 
 
-def test_load_document():
-    loader = DocumentLoader()
-
-    document = loader.load(FIXTURE)
-
+def test_load_document(document):
+    # `document` is the fixture PDF converted by DocumentLoader (conftest.py).
     assert isinstance(document, DoclingDocument)
     assert len(document.pages) > 0
 

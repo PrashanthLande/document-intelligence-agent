@@ -1,4 +1,17 @@
+from pathlib import Path
+
 import pytest
+from docling.datamodel.document import DoclingDocument
+
+from document_intelligence_agent.ingestion.loader import DocumentLoader
+
+FIXTURE = Path("tests/fixtures/docling_technical_report.pdf")
+
+
+@pytest.fixture(scope="session")
+def document() -> DoclingDocument:
+    """The fixture PDF, converted once per test run (about a minute)."""
+    return DocumentLoader().load(FIXTURE)
 
 
 class FakeGenerator:

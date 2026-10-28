@@ -2,7 +2,6 @@ from pathlib import Path
 
 from document_intelligence_agent.chunking.chunker import DocumentChunker
 from document_intelligence_agent.embeddings.embedder import DocumentEmbedder
-from document_intelligence_agent.ingestion.loader import DocumentLoader
 from document_intelligence_agent.rag.generator import RAGGenerator
 from document_intelligence_agent.rag.pipeline import RAGPipeline
 from document_intelligence_agent.reranking.reranker import (
@@ -16,9 +15,7 @@ from document_intelligence_agent.vector_store.chroma_store import (
 FIXTURE = Path("tests/fixtures/docling_technical_report.pdf")
 
 
-def test_rag_pipeline(fake_llm):
-    document = DocumentLoader().load(FIXTURE)
-
+def test_rag_pipeline(document, fake_llm):
     chunks = DocumentChunker().chunk(
         document,
         document_id=FIXTURE.name,

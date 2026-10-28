@@ -3,7 +3,6 @@ from pathlib import Path
 
 from document_intelligence_agent.chunking.chunker import Chunk, DocumentChunker
 from document_intelligence_agent.embeddings.embedder import DocumentEmbedder
-from document_intelligence_agent.ingestion.loader import DocumentLoader
 from document_intelligence_agent.vector_store.chroma_store import (
     ChromaVectorStore,
 )
@@ -12,9 +11,7 @@ from document_intelligence_agent.vector_store.chroma_store import (
 FIXTURE = Path("tests/fixtures/docling_technical_report.pdf")
 
 
-def test_vector_store():
-    document = DocumentLoader().load(FIXTURE)
-
+def test_vector_store(document):
     chunks = DocumentChunker().chunk(
         document,
         document_id=FIXTURE.name,
@@ -39,9 +36,7 @@ def test_vector_store():
     assert len(result["metadatas"]) == len(chunks)
 
 
-def test_vector_store_preserves_provenance():
-    document = DocumentLoader().load(FIXTURE)
-
+def test_vector_store_preserves_provenance(document):
     chunks = DocumentChunker().chunk(
         document,
         document_id=FIXTURE.name,
